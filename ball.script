@@ -1,0 +1,23 @@
+go.property("dir", vmath.vector3(0, 0, -1))
+go.property("speed", 22) -- Velocidad inicial por defecto
+
+function init(self)
+	-- Autodestrucción a los 4 segundos para no acumular objetos
+	timer.delay(4, false, function()
+		go.delete()
+	end)
+
+	-- Asignamos la velocidad física en el frame 1
+	timer.delay(0, false, function()
+		local velocity = self.dir * self.speed
+		go.set("#collisionobject", "linear_velocity", velocity)
+	end)
+end
+
+function update(self, dt)
+	-- Si cae al vacío debajo de la mesa, la eliminamos
+	local pos = go.get_position()
+	if pos.y < -10 then
+		go.delete()
+	end
+end

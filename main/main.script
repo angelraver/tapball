@@ -1,0 +1,113 @@
+local CAN_WIDTH  = 0.38
+local CAN_HEIGHT = 0.52
+local SAFETY_GAP = 0.005
+local TABLE_TOP_Y = 0.9
+local CENTER_COL = 5.5   
+
+local X_SCALE = 1.40
+local Y_SCALE = 1.00
+
+local function grid_to_world(grid_x, grid_y, target_height)
+	local world_x = (grid_x - CENTER_COL) * CAN_WIDTH
+
+	-- Usamos la altura específica del tipo de objeto para calcular su centro vertical
+	local height = target_height or CAN_HEIGHT
+	local half_height = height / 2
+	local base_y = TABLE_TOP_Y + half_height
+
+	local world_y = base_y + ((grid_y - 1) * (height + SAFETY_GAP))
+	local world_z = 0.0 
+
+	return vmath.vector3(world_x, world_y, world_z)
+end
+
+local function load_level(self, level_id)
+	-- 1. Limpiamos objetos anteriores
+	for _, id in ipairs(self.spawned_cans) do
+		if go.exists(id) then
+			go.delete(id)
+		end
+	end
+	self.spawned_cans = {}
+
+	-- 2. Cargar diccionario de tipos de blancos (targets.json)
+	local targets_raw = sys.load_resource("/assets/targets.json")
+	if not targets_raw then
+		print("ERROR: No se pudo cargar /assets/targets.json")
+		return
+	end
+	local targets_data = json.decode(targets_raw).targets
+
+	-- 3. Cargar datos del nivel (levels.json)
+	local levels_raw = sys.load_resource("/assets/levels.json")
+	if not levels_raw then
+		print("ERROR: No se pudo cargar /assets/levels.json")
+		return
+	end
+
+	local levels_data = json.decode(levels_raw)
+	local target_level = nil
+
+	for _, lvl in ipairs(levels_data.levels) do
+		if lvl.id == level_id then
+			target_level = lvl
+			break
+		end
+	end
+
+	if not target_level then return end
+
+	-- 4. Instanciar cada blanco usando su tipo correspondiente
+	for _, coord in ipairs(target_level.cans) do
+		local gx = coord[1]
+		local gy = coord[2]
+		local target_type = coord[3] or "aluminum_can" -- Tipo por defecto
+
+		local target_def = targets_data[target_type]
+		if target_def then
+			local pos = grid_to_world(gx, gy, target_def.height)
+			local item_id = factory.create(target_def.factory, pos)
+			table.insert(self.spawned_cans, item_id)
+		else
+			print("WARN: Tipo de blanco no encontrado en targets.json:", target_type)
+		end
+	end
+end
+
+function init(self)
+	msg.post("/camera#camera", "acquire_camera_focus")
+	msg.post(".", "acquire_input_focus")
+
+	self.spawned_cans = {}
+	load_level(self, 1)
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("touch") and action.pressed then
+		local proj_w = sys.get_config_int("display.width", 720)
+		local proj_h = sys.get_config_int("display.height", 1280)
+
+		local nx = (action.x / proj_w - 0.5) * 2
+		local ny = (action.y / proj_h - 0.5) * 2
+
+		local cam_x, cam_y, cam_z = 0.0, 1.5, 5.0
+		local target_z = 0.0
+		local dist_z = cam_z - target_z
+
+		local aspect = proj_w / proj_h
+		local fov_tan = math.tan(0.95 / 2)
+
+		local target_x = cam_x + (nx * dist_z * fov_tan * aspect * X_SCALE)
+		local target_y = cam_y + (ny * dist_z * fov_tan * Y_SCALE)
+
+		local spawn_pos = vmath.vector3(0, 0.9, 4.2)
+		local target_pos = vmath.vector3(target_x, target_y, target_z)
+
+		local dir = vmath.normalize(target_pos - spawn_pos)
+
+		factory.create("/game_manager#ball_factory", spawn_pos, nil, {
+			dir = dir,
+			speed = 16
+		})
+	end
+end

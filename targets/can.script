@@ -1,0 +1,5 @@
+function init(self)
+	-- Le quitamos velocidad inicial por si el motor le calcula alguna al nacer
+	go.set("#collisionobject", "linear_velocity", vmath.vector3(0, 0, 0))
+	go.set("#collisionobject", "angular_velocity", vmath.vector3(0, 0, 0))
+end

@@ -1,0 +1,16 @@
+{
+	"targets": {
+		"aluminum_can": {
+			"factory": "/game_manager#aluminum_can_factory",
+			"height": 0.52
+		},
+		"wood_box": {
+			"factory": "/game_manager#wood_box_factory",
+			"height": 0.30
+		},
+		"glass": {
+			"factory": "/game_manager#glass_factory",
+			"height": 0.52
+		}
+	}
+}

@@ -1,0 +1,26 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+
+[script]
+shared_state = 1
+
+[display]
+width = 720
+height = 1280
+high_dpi = 1
+
+[android]
+input_method = HiddenInputField
+
+[html5]
+scale_mode = stretch
+
+[project]
+title = My Project
+custom_resources = /assets/levels.json, /assets/targets.json
+
+[physics]
+type = 3D
+gravity_y = -9.81
+debug = 1
+
