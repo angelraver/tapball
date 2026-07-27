@@ -1,5 +1,6 @@
 local CAN_WIDTH  = 0.38
 local CAN_HEIGHT = 0.52
+local CAN_DEPTH  = 0.38 -- Tamaño/Profundidad del objeto en Z
 local SAFETY_GAP = 0.005
 local TABLE_TOP_Y = 0.9
 local CENTER_COL = 5.5   
@@ -7,7 +8,8 @@ local CENTER_COL = 5.5
 local X_SCALE = 1.40
 local Y_SCALE = 1.00
 
-local function grid_to_world(grid_x, grid_y, target_height)
+-- Ahora grid_to_world acepta grid_z
+local function grid_to_world(grid_x, grid_y, grid_z, target_height)
 	local world_x = (grid_x - CENTER_COL) * CAN_WIDTH
 
 	-- Usamos la altura específica del tipo de objeto para calcular su centro vertical
@@ -16,7 +18,11 @@ local function grid_to_world(grid_x, grid_y, target_height)
 	local base_y = TABLE_TOP_Y + half_height
 
 	local world_y = base_y + ((grid_y - 1) * (height + SAFETY_GAP))
-	local world_z = 0.0 
+
+	-- grid_z = 1 es el frente (z = 0.0). A mayor grid_z, más atrás va (hacia Z negativo).
+	local depth = CAN_DEPTH
+	local gz = grid_z or 1.0
+	local world_z = -((gz - 1) * (depth + SAFETY_GAP))
 
 	return vmath.vector3(world_x, world_y, world_z)
 end
@@ -57,15 +63,24 @@ local function load_level(self, level_id)
 
 	if not target_level then return end
 
-	-- 4. Instanciar cada blanco usando su tipo correspondiente
+	-- 4. Instanciar cada blanco usando su tipo y posición 3D correspondiente
 	for _, coord in ipairs(target_level.cans) do
 		local gx = coord[1]
 		local gy = coord[2]
-		local target_type = coord[3] or "aluminum_can" -- Tipo por defecto
+		local gz = 1.0
+		local target_type = "aluminum_can"
+
+		-- Detección flexible: si la posición 3 es número, es Z; si es string, es tipo (compatibilidad)
+		if type(coord[3]) == "number" then
+			gz = coord[3]
+			target_type = coord[4] or "aluminum_can"
+		else
+			target_type = coord[3] or "aluminum_can"
+		end
 
 		local target_def = targets_data[target_type]
 		if target_def then
-			local pos = grid_to_world(gx, gy, target_def.height)
+			local pos = grid_to_world(gx, gy, gz, target_def.height)
 			local item_id = factory.create(target_def.factory, pos)
 			table.insert(self.spawned_cans, item_id)
 		else
