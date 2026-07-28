@@ -4,3 +4,11 @@
 .DS_Store
 Thumbs.db
 .vscode/launch.json
+build
+build/default/_generated_272993b2.factoryc
+build/default/.artifact-map
+build/default/ball.goc
+build/default/game.projectc
+build/default/assets/levels.json
+build/default/builtins/render/default.renderc
+build/default/targets/wood_box.goc

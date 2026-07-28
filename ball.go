@@ -29,3 +29,18 @@ embedded_components {
   "}\n"
   ""
 }
+embedded_components {
+  id: "model"
+  type: "model"
+  data: "mesh: \"/assets/ball.glb\"\n"
+  "name: \"{{NAME}}\"\n"
+  "materials {\n"
+  "  name: \"default\"\n"
+  "  material: \"/builtins/materials/model.material\"\n"
+  "  textures {\n"
+  "    sampler: \"tex0\"\n"
+  "    texture: \"/assets/ball.png\"\n"
+  "  }\n"
+  "}\n"
+  ""
+}

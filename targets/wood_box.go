@@ -34,3 +34,18 @@ embedded_components {
   "angular_damping: 0.6\n"
   ""
 }
+embedded_components {
+  id: "model"
+  type: "model"
+  data: "mesh: \"/assets/box.glb\"\n"
+  "name: \"{{NAME}}\"\n"
+  "materials {\n"
+  "  name: \"Material\"\n"
+  "  material: \"/builtins/materials/model.material\"\n"
+  "  textures {\n"
+  "    sampler: \"tex0\"\n"
+  "    texture: \"/assets/wood.png\"\n"
+  "  }\n"
+  "}\n"
+  ""
+}

@@ -22,5 +22,5 @@ custom_resources = /assets/levels.json, /assets/targets.json
 [physics]
 type = 3D
 gravity_y = -9.81
-debug = 1
+debug = 0
 
